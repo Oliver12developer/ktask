@@ -1,0 +1,12 @@
+{
+    "BITRIX_BASE_URL": "https://bitrix.kernotek.mx/rest/{USER_ID}/t7np5xkluj8rihqs",
+    "ENDPOINTS": {
+        "BITRIX_CREATE_TASK_URL": "/task.item.add",
+        "BITRIX_GET_TASKS_URL": "/tasks.task.list",
+        "GET_HISTORY": "/tasks.task.history.list",
+        "GET_COMMENTS_LIST_URL": "/task.commentitem.getlist",
+        "GET_COMMENT_DETAILS_URL": "/task.commentitem.get",
+        "BITRIX_USER_INFO": "/user.get",
+        "BITRIX_GROUP_INFO": "/sonet_group.get"
+    }
+}

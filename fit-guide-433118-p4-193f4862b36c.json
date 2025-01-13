@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "fit-guide-433118-p4",
+  "private_key_id": "193f4862b36ca5c629ae2432819fc90500003689",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDXKHS5lvjG1r3m\nVTZVgoi50Tv2KETjni671znjO91ujwFyBOYyV3FggIJ1zTzrqVDdLWzFD8n6d7jf\nEfvYhS5rVHcKUIrq7I2Y/RoszUspVy0/wUmKUGeEhjLegUz2JjNObytALDAn1P7m\nmn02p2LNc9uOGLspLQRs8pVJdeUvFAEsl0d+h0FU/5hSnYaJj8GbraIzRmv3LV1v\nlTDKDP+mwKlGAzJntfOtY9ASo1GHfjpCHQnC0wDpf4bBLIj5M2TbuX2RTadbqvV6\nu1xWVC19XqHhUFjtnO+264KjTr0uNHXuFLI+QfRDdKYei8RLUc+QeTrSeUj00Rbm\nHeYSkSZnAgMBAAECggEADq2k4PBqwm3uAKO5lDXWjA65L37pzDmDaK8zNMxlu+An\nshahebe7dWDvBYhd6pnfeWda70q3dc3rH9TDQK89Tncxs9Nw1rwSoOhLe9j5krVu\n0dWm5be8iC77k3Bwxq4ue+BbrAIXuu/t/990QWFD/U41IUmQoyt+DMyz4JIZc4+i\nyf1JY8dnRlEX4g1L+MJNSx3FQsVJfghqHSirCZr9VZ/P0y9BNmz72ZgK0DxcCANW\nAsLXd08jb3g5QZVDl6N17xwBOVzmcSU5+fS64WEpjfe5QdgWB7LdgwYPjT/c1y6K\nbn04xqOt2KIxnM6wuX2Qu9X+qzPtVDVQ2gGCvnIg4QKBgQDuqgE0BQwxjpGCHRWB\nw+4YTjoAdNtqam03tjjG61hGnegmX2pBZrZJD0R2Vk2eaqfAMsepKuNODFUmwNvc\nNJ5bKZ4gDY2VkE/JWOtCpbS190Olltfdotrk/Mh02VRyHPF4hSdSXQuUkPMsqE69\nXkTDbQFS6jL2zo3I88Gx43W/MQKBgQDmyVpG8hPhPZAHfEqxsAeTzpCGg+0jXvMZ\nNYIxSJMAV70dyJb4zyxP1LIFm6FvwYw2QtEZPdXGhpxyyvpvOKQQXL0oL77vfoj4\nwuVo3w5+YymEIaBIdZfGBiSCdnjT9+6Of+hSFqpLEQlGrI8MEZ9FbkNByndq7zN/\ndNSEWPhJFwKBgEE46HdE4d4xLga22AfMeabeye8SAFyGlS5ieAW0jz1NLgI+lRUm\ncq5oo7cLQs8GKq3VssbCV7gemq6qiesV3ijfqLztt0GmXIeT60cdbdNErZH1NSz2\nsoddpZJ5SiCdVEgxa1uQ3fdN3YbYwBv0RSp7AZ+dLSxRqmG+a7KnjKghAoGAXdjf\nRx5Fi0BXg1O9pAfq7OYAy1J2af3AaS3jJVtXu7nyA1yAV+kXIddiFPm2ahWQiLgf\nA16rwbEXiW6U7AliXez4VpEj2Yvg8xd95mleIXL9fOeXoB+BelshGZRHihq1/Whx\n9n+U/DWPShf9i3DXDYrK+sP0T525mUjO6oqrXD0CgYAA9tGYs1cxDvNR6byF/1xb\nUHmHUnfJ87rCtRZD6EXNYLuGM7Gy45Vr8b7dAqfqcWuUGmiiOkWaZHPLGyUhoqMW\nPYw/cdK77oQguF7I4D/PXY/XyRPPMVMOn2cReaBzjdfHyx/tFnMr1nhPmqCmxQ38\nYZt2xHuW+JcFf7D0GOzFsA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "python-bitrix-gs@fit-guide-433118-p4.iam.gserviceaccount.com",
+  "client_id": "107839206825630700500",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/python-bitrix-gs%40fit-guide-433118-p4.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
