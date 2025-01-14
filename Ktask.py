@@ -3,6 +3,7 @@ import re
 import urllib3
 from services.google_sheets import read_from_sheet, write_tasks_to_sheet
 from services.bitrix import get_user_id_by_name, create_task_in_bitrix, get_tasks_from_bitrix, get_group_id_by_name
+from scripts.ResumeTask import get_resume_task
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
@@ -12,7 +13,7 @@ def load_json(filename):
         with open(filename, 'r', encoding='utf-8') as file:
             return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
-        print(f"❌ Error al cargar {filename}")
+        print(f"Error al cargar {filename}")
         exit(1)
 
 # 🔹 Cargar configuraciones desde archivos JSON
@@ -27,13 +28,13 @@ def extract_sheet_id(sheet_url):
 
 SHEET_ID = extract_sheet_id(sheet_config["SHEET_URL"])
 if not SHEET_ID:
-    print("❌ Error: No se pudo extraer el ID de la hoja de cálculo.")
+    print("Error: No se pudo extraer el ID de la hoja de cálculo.")
     exit(1)
 
 # 🔹 Obtener USER_ID
 USER_ID = user_config.get("USER_ID")
 if not USER_ID:
-    print("❌ Error: No se encontró 'USER_ID' en user_id.json")
+    print("Error: No se encontró 'USER_ID' en user_id.json")
     exit(1)
 
 # 🔹 Construcción de URLs de Bitrix con USER_ID dinámico
@@ -154,6 +155,32 @@ def process_sheet_data(data):
         print(f"Tarea preparada: {task_data}")
 
         create_task_in_bitrix(task_data)
+
+def main():
+    while True:
+        print("\nSeleccione una opción:")
+        print("1. Iniciar programa (solo si es la primera vez que ejecutas Ktask)")
+        print("2. Obtener tareas")
+        print("3. Crear tareas")
+        print("4. Resumen del estado de tarea")
+        print("5. Salir")
+
+        opcion = input("Ingrese el número de la opción: ")
+
+        if opcion == "1":
+            print("Ejecutando la configuración inicial de Ktask...")
+            process_sheet_data()  # Se puede modificar según la inicialización real
+        elif opcion == "2":
+            process_sheet_data()
+        elif opcion == "3":
+            create_task_in_bitrix()
+        elif opcion == "4":
+            get_resume_task()
+        elif opcion == "5":
+            print("Saliendo del programa...")
+            break
+        else:
+            print("Opción no válida, intenta de nuevo.")
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@
     "ENDPOINTS": {
         "BITRIX_CREATE_TASK_URL": "/task.item.add",
         "BITRIX_GET_TASKS_URL": "/tasks.task.list",
-        "GET_HISTORY": "/tasks.task.history.list",
+        "GET_RESUME": "/tasks.task.result.list",
         "GET_COMMENTS_LIST_URL": "/task.commentitem.getlist",
         "GET_COMMENT_DETAILS_URL": "/task.commentitem.get",
         "BITRIX_USER_INFO": "/user.get",

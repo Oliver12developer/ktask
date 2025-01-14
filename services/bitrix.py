@@ -50,21 +50,39 @@ def create_task_in_bitrix(task_data):
         print(f"Error al crear la tarea: {response.status_code} - {response.text}")
 
 
+# 🔹 Función para obtener tareas desde Bitrix con filtro por nombre
+#def get_tasks_from_bitrix():
+#    response = requests.post(BITRIX_URLS["BITRIX_GET_TASKS_URL"], verify=False)
+#
+#    if response.status_code == 200:
+#        data = response.json()
+#        tasks = data.get("result", {}).get("tasks", [])
+#
+#        # 🔹 Filtrar solo las tareas cuyo nombre comienza con "KTK0"
+#        filtered_tasks = [task for task in tasks if task.get("title", "").startswith("KTK0")]
+#
+#        return filtered_tasks if filtered_tasks else []
+#
+#    print(f"❌ Error al obtener tareas: {response.status_code} - {response.text}")
+#    return []
+
+# 🔹 Función para obtener tareas desde Bitrix
 def get_tasks_from_bitrix():
     response = requests.post(BITRIX_URLS["BITRIX_GET_TASKS_URL"], verify=False)
-    if response.status_code == 200:
-        tasks = response.json().get("result", {}).get("tasks", [])
-        return tasks
-    else:
-        print(f"Error al obtener tareas: {response.status_code} - {response.text}")
-        return []
 
+    if response.status_code == 200:
+        data = response.json()
+        tasks = data.get("result", {}).get("tasks", [])
+        return tasks if tasks else []
+
+    print(f"❌ Error al obtener tareas: {response.status_code} - {response.text}")
+    return []
 
 def get_user_name(user_id):
     if user_id in user_cache:
         return user_cache[user_id]
 
-    response = requests.post(BITRIX_URLS["BITRIX_USER_INFO_URL"], json={"ID": user_id}, verify=False)
+    response = requests.post(BITRIX_URLS["BITRIX_USER_INFO"], json={"ID": user_id}, verify=False)
     if response.status_code == 200:
         user_info = response.json().get("result", [])
         if user_info:
@@ -87,7 +105,7 @@ def get_group_name(group_id):
         return group_cache[group_id]
 
     response = requests.post(
-        BITRIX_URLS["BITRIX_GROUP_INFO_URL"], json={"FILTER": {"ID": group_id}}, verify=False
+        BITRIX_URLS["BITRIX_GROUP_INFO"], json={"FILTER": {"ID": group_id}}, verify=False
     )
     if response.status_code == 200:
         group_info = response.json().get("result", [])
@@ -136,7 +154,7 @@ def get_group_id_by_name(group_name):
         return group_cache[group_name]
 
     response = requests.post(
-        BITRIX_URLS["BITRIX_GROUP_INFO_URL"],
+        BITRIX_URLS["BITRIX_GROUP_INFO"],
         json={"FILTER": {"NAME": group_name}},  # Cambia "NAME" si es necesario
         verify=False,
     )
