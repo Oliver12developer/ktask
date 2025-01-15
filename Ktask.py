@@ -1,5 +1,6 @@
 import json
 import re
+import subprocess
 import urllib3
 from services.google_sheets import read_from_sheet, write_tasks_to_sheet
 from services.bitrix import get_user_id_by_name, create_task_in_bitrix, get_tasks_from_bitrix, get_group_id_by_name
@@ -53,93 +54,111 @@ credentials = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes
 # Construir el servicio de Google Sheets
 service = build("sheets", "v4", credentials=credentials)
 
-
-#Librería para desactivar la autenticación de certificado
+# Desactivar advertencias de SSL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
-# Cargar configuraciones desde settings.json
-with open("settings/settings.json", "r") as file:
-    config = json.load(file)
-
-#Cargar URL desde SheetURL.json
-with open("settings/SheetURL.json", "r") as file:
-    urlSheet = json.load(file)
-
-#Rango de celdas para lectura y escritura
+# Rango de celdas para lectura y escritura
 READ_RANGE_NAME = "Hoja 2!A2:R"
 WRITE_RANGE_NAME = "Hoja 2!A2"
 
-
 headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
-#Cache para almacenar usuarios y grupos para poder obtener su id y nombre
+# Cache para almacenar usuarios y grupos para poder obtener su id y nombre
 user_cache = {}
 group_cache = {}
 
 
+# 🔹 Función principal del menú
+def main():
+    while True:
+        print("\n📌 Menú de Opciones:")
+        print("1. Obtener tareas")
+        print("2. Crear tareas")
+        print("3. Obtener Resumen del Estado de las Tareas")
+        print("4. Salir de Ktask")
+
+        opcion = input("Ingrese el número de la opción: ")
+
+        if opcion == "1":
+            print("\n📥 Obteniendo tareas desde Bitrix...")
+            tasks = get_tasks_from_bitrix()
+            if tasks:
+                write_tasks_to_sheet(SHEET_ID, tasks)
+            else:
+                print("⚠️ No se encontraron tareas en Bitrix.")
+
+        elif opcion == "2":
+            print("\n📤 Creando tareas en Bitrix...")
+            data = read_from_sheet(SHEET_ID, READ_RANGE_NAME)
+            if data:
+                process_sheet_data(data)
+            else:
+                print("⚠️ No se encontraron datos en la hoja.")
+
+        elif opcion == "3":
+            print("\n📋 Ejecutando el script scripts/ResumeTask.py...")
+
+            result = subprocess.run(["python3", "scripts/ResumeTask.py"], capture_output=True, text=True)
+
+            print(result.stdout)  # Mostrar salida del script
+            print(result.stderr)  # Mostrar errores (si hay)
+
+        elif opcion == "4":
+            print("✅ Saliendo del programa...")
+            break
+
+        else:
+            print("❌ Opción no válida, intenta de nuevo.")
+
+# 🔹 Función para procesar las tareas y enviarlas a Bitrix
 def process_sheet_data(data):
     for row in data:
-        if len(row) < 13:  # Validar que la fila tenga al menos 13 columnas
-            print(f"Fila incompleta, se omite: {row}")
+        if len(row) < 13:
+            print(f"⚠️ Fila incompleta, se omite: {row}")
             continue
 
-        # Validar que la celda `M` (índice 12) esté vacía
-        if row[12].strip():  # Si contiene datos, omitir la fila
-            print(f"La celda 'M' contiene datos, se omite la fila: {row}")
+        if row[12].strip():
+            print(f"⚠️ La celda 'M' contiene datos, se omite la fila: {row}")
             continue
 
-        # Obtener y preparar datos para crear la tarea
-        task_name = f"{row[2].strip()} {row[3].strip()}"  # Concatenar C y D
-        task_description = row[4].strip() if len(row) > 4 else ""  # Celda E
+        task_name = f"{row[2].strip()} {row[3].strip()}"
+        task_description = row[4].strip() if len(row) > 4 else ""
 
-        # Convertir nombres en IDs con `get_user_id_by_name`
-        responsible_name = row[6].strip() if len(row) > 6 else ""  # Columna G
-        creator_name = row[7].strip() if len(row) > 7 else ""  # Columna H
+        responsible_name = row[6].strip() if len(row) > 6 else ""
+        creator_name = row[7].strip() if len(row) > 7 else ""
 
         responsible_id = get_user_id_by_name(responsible_name)
         creator_id = get_user_id_by_name(creator_name)
 
-        # Validar que los IDs sean válidos
-        if not responsible_id:
-            print(f"Error: No se encontró el ID del Responsable '{responsible_name}'")
+        if not responsible_id or not creator_id:
+            print(f"⚠️ Error con los IDs de Responsable o Creador: {responsible_name}, {creator_name}")
             continue
 
-        if not creator_id:
-            print(f"Error: No se encontró el ID del Creador '{creator_name}'")
-            continue
-
-        # Obtener IDs para participantes y observadores
         participants = []
-        if len(row) > 8 and row[8].strip():  # Columna I
+        if len(row) > 8 and row[8].strip():
             participants = [
                 get_user_id_by_name(name.strip())
                 for name in row[8].strip().split(",")
                 if name.strip()
             ]
-            # Filtrar IDs inválidos
             participants = [id for id in participants if id]
 
         observers = []
-        if len(row) > 9 and row[9].strip():  # Columna J
+        if len(row) > 9 and row[9].strip():
             observers = [
                 get_user_id_by_name(name.strip())
                 for name in row[9].strip().split(",")
                 if name.strip()
             ]
-            # Filtrar IDs inválidos
             observers = [id for id in observers if id]
 
-        # Obtener etiquetas (tags)
         tags = []
-        if len(row) > 10 and row[10].strip():  # Columna K
+        if len(row) > 10 and row[10].strip():
             tags = [tag.strip() for tag in row[10].strip().split(",") if tag.strip()]
 
-        # Obtener ID del grupo
-        group_name = row[11].strip() if len(row) > 11 else ""  # Columna L
+        group_name = row[11].strip() if len(row) > 11 else ""
         group_id = get_group_id_by_name(group_name)
 
-        # Crear la tarea en Bitrix
         task_data = {
             "TITLE": task_name,
             "DESCRIPTION": task_description,
@@ -151,131 +170,10 @@ def process_sheet_data(data):
             "GROUP_ID": group_id,
         }
 
-        # Verificar datos enviados
-        print(f"Tarea preparada: {task_data}")
-
+        print(f"📌 Tarea preparada: {task_data}")
         create_task_in_bitrix(task_data)
 
-def main():
-    while True:
-        print("\nSeleccione una opción:")
-        print("1. Iniciar programa (solo si es la primera vez que ejecutas Ktask)")
-        print("2. Obtener tareas")
-        print("3. Crear tareas")
-        print("4. Resumen del estado de tarea")
-        print("5. Salir")
 
-        opcion = input("Ingrese el número de la opción: ")
-
-        if opcion == "1":
-            print("Ejecutando la configuración inicial de Ktask...")
-            process_sheet_data()  # Se puede modificar según la inicialización real
-        elif opcion == "2":
-            process_sheet_data()
-        elif opcion == "3":
-            create_task_in_bitrix()
-        elif opcion == "4":
-            get_resume_task()
-        elif opcion == "5":
-            print("Saliendo del programa...")
-            break
-        else:
-            print("Opción no válida, intenta de nuevo.")
-
-
+# 🔹 Iniciar el menú primero
 if __name__ == "__main__":
-    # Prueba de la función get_user_id_by_name
-    user_name = "Oliver Suárez"  # Cambia esto por el nombre real
-    user_id = get_user_id_by_name(user_name)
-    if user_id:
-        print(f"El ID de '{user_name}' es {user_id}")
-    else:
-        print(f"No se encontró el usuario con el nombre '{user_name}'")
-
-    data = read_from_sheet(SHEET_ID, READ_RANGE_NAME)
-    if data:
-        for row in data:
-            if len(row) < 13:  # Validar que la fila tenga al menos 13 columnas
-                print(f"Fila incompleta, se omite: {row}")
-                continue
-
-            # Validar que la celda `M` (índice 12) contenga datos
-            if row[12].strip():  # Celda M
-                print(f"La celda 'M' contiene datos, se omite la fila: {row}")
-                continue
-
-            # Obtener y preparar datos para crear la tarea
-            task_name = f"{row[2].strip()} {row[3].strip()}"  # Concatenar C y D
-            task_description = row[4].strip() if len(row) > 4 else ""  # Celda E
-
-            # Convertir nombres en IDs con `get_user_id_by_name`
-            responsible_name = row[6].strip() if len(row) > 6 else ""  # Columna G
-            creator_name = row[7].strip() if len(row) > 7 else ""  # Columna H
-
-            responsible_id = get_user_id_by_name(responsible_name)
-            creator_id = get_user_id_by_name(creator_name)
-
-            # Validar que los IDs sean válidos
-            if not responsible_id:
-                print(f"Error: No se encontró el ID del Responsable '{responsible_name}'")
-                continue
-
-            if not creator_id:
-                print(f"Error: No se encontró el ID del Creador '{creator_name}'")
-                continue
-
-            # Obtener IDs para participantes y observadores
-            participants = []
-            if len(row) > 8 and row[8].strip():  # Columna I
-                participants = [
-                    get_user_id_by_name(name.strip())
-                    for name in row[8].strip().split(",")
-                    if name.strip()
-                ]
-                # Filtrar IDs inválidos
-                participants = [id for id in participants if id]
-
-            observers = []
-            if len(row) > 9 and row[9].strip():  # Columna J
-                observers = [
-                    get_user_id_by_name(name.strip())
-                    for name in row[9].strip().split(",")
-                    if name.strip()
-                ]
-                # Filtrar IDs inválidos
-                observers = [id for id in observers if id]
-
-            # Obtener etiquetas (tags)
-            tags = []
-            if len(row) > 10 and row[10].strip():  # Columna K
-                tags = [tag.strip() for tag in row[10].strip().split(",") if tag.strip()]
-
-            # Obtener ID del grupo
-            group_name = row[11].strip() if len(row) > 11 else ""  # Columna L
-            group_id = get_group_id_by_name(group_name)
-
-            # Crear la tarea en Bitrix
-            task_data = {
-                "TITLE": task_name,
-                "DESCRIPTION": task_description,
-                "RESPONSIBLE_ID": responsible_id,
-                "CREATED_BY": creator_id,
-                "ACCOMPLICES": participants,
-                "AUDITORS": observers,
-                "TAGS": tags,
-                "GROUP_ID": group_id,
-            }
-
-            # Verificar datos enviados
-            print(f"Tarea preparada: {task_data}")
-
-            create_task_in_bitrix(task_data)
-    else:
-        print("No se encontraron datos en la hoja.")
-
-    # Obtener tareas de Bitrix y escribirlas en la hoja de cálculo
-    tasks = get_tasks_from_bitrix()
-    if tasks:
-        write_tasks_to_sheet(SHEET_ID, tasks)
-    else:
-        print("No se encontraron tareas.")
+    main()
