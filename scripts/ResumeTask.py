@@ -19,7 +19,7 @@ def load_json(filename):
 
 # Cargar configuraciones desde los archivos JSON
 settings = load_json("settings/settings.json")
-user_config = load_json("user_config/user_id.json")
+user_config = load_json("settings/user_id.json")
 sheet_config = load_json("settings/SheetURL.json")
 
 # Extraer ID de la hoja desde la URL en `SheetURL.json`

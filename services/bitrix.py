@@ -8,7 +8,7 @@ with open("settings/settings.json", "r") as file:
 
 # 🔹 Cargar configuraciones
 settings = json.load(open("settings/settings.json"))
-user_config = json.load(open("user_config/user_id.json"))
+user_config = json.load(open("settings/user_id.json"))
 
 # 🔹 Construcción de URLs dinámicas
 BITRIX_BASE_URL = settings["BITRIX_BASE_URL"].replace("{USER_ID}", user_config["USER_ID"])

@@ -4,7 +4,6 @@ import subprocess
 import urllib3
 from services.google_sheets import read_from_sheet, write_tasks_to_sheet
 from services.bitrix import get_user_id_by_name, create_task_in_bitrix, get_tasks_from_bitrix, get_group_id_by_name
-from scripts.ResumeTask import get_resume_task
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
@@ -20,7 +19,7 @@ def load_json(filename):
 # 🔹 Cargar configuraciones desde archivos JSON
 sheet_config = load_json("settings/SheetURL.json")
 settings_config = load_json("settings/settings.json")
-user_config = load_json("user_config/user_id.json")
+user_config = load_json("settings/user_id.json")
 
 # 🔹 Extraer SHEET_ID desde la URL
 def extract_sheet_id(sheet_url):
@@ -71,7 +70,7 @@ group_cache = {}
 # 🔹 Función principal del menú
 def main():
     while True:
-        print("\n📌 Menú de Opciones:")
+        print("\n Menú de Opciones:")
         print("1. Obtener tareas")
         print("2. Crear tareas")
         print("3. Obtener Resumen del Estado de las Tareas")
@@ -80,23 +79,23 @@ def main():
         opcion = input("Ingrese el número de la opción: ")
 
         if opcion == "1":
-            print("\n📥 Obteniendo tareas desde Bitrix...")
+            print("\n Obteniendo tareas desde Bitrix...")
             tasks = get_tasks_from_bitrix()
             if tasks:
                 write_tasks_to_sheet(SHEET_ID, tasks)
             else:
-                print("⚠️ No se encontraron tareas en Bitrix.")
+                print("No se encontraron tareas en Bitrix.")
 
         elif opcion == "2":
-            print("\n📤 Creando tareas en Bitrix...")
+            print("\n Creando tareas en Bitrix...")
             data = read_from_sheet(SHEET_ID, READ_RANGE_NAME)
             if data:
                 process_sheet_data(data)
             else:
-                print("⚠️ No se encontraron datos en la hoja.")
+                print(" No se encontraron datos en la hoja.")
 
         elif opcion == "3":
-            print("\n📋 Ejecutando el script scripts/ResumeTask.py...")
+            print("\n Ejecutando el script scripts/ResumeTask.py...")
 
             result = subprocess.run(["python3", "scripts/ResumeTask.py"], capture_output=True, text=True)
 
@@ -104,21 +103,21 @@ def main():
             print(result.stderr)  # Mostrar errores (si hay)
 
         elif opcion == "4":
-            print("✅ Saliendo del programa...")
+            print("Saliendo del programa...")
             break
 
         else:
-            print("❌ Opción no válida, intenta de nuevo.")
+            print("Opción no válida, intenta de nuevo.")
 
 # 🔹 Función para procesar las tareas y enviarlas a Bitrix
 def process_sheet_data(data):
     for row in data:
         if len(row) < 13:
-            print(f"⚠️ Fila incompleta, se omite: {row}")
+            print(f"Fila incompleta, se omite: {row}")
             continue
 
         if row[12].strip():
-            print(f"⚠️ La celda 'M' contiene datos, se omite la fila: {row}")
+            print(f"La celda 'M' contiene datos, se omite la fila: {row}")
             continue
 
         task_name = f"{row[2].strip()} {row[3].strip()}"
@@ -131,7 +130,7 @@ def process_sheet_data(data):
         creator_id = get_user_id_by_name(creator_name)
 
         if not responsible_id or not creator_id:
-            print(f"⚠️ Error con los IDs de Responsable o Creador: {responsible_name}, {creator_name}")
+            print(f"Error con los IDs de Responsable o Creador: {responsible_name}, {creator_name}")
             continue
 
         participants = []
@@ -170,7 +169,7 @@ def process_sheet_data(data):
             "GROUP_ID": group_id,
         }
 
-        print(f"📌 Tarea preparada: {task_data}")
+        print(f"Tarea preparada: {task_data}")
         create_task_in_bitrix(task_data)
 
 
