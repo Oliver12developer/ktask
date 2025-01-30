@@ -6,11 +6,11 @@ import requests
 with open("settings/settings.json", "r") as file:
     config = json.load(file)
 
-# 🔹 Cargar configuraciones
+# Cargar configuraciones
 settings = json.load(open("settings/settings.json"))
 user_config = json.load(open("settings/user_id.json"))
 
-# 🔹 Construcción de URLs dinámicas
+# Construcción de URLs dinámicas
 BITRIX_BASE_URL = settings["BITRIX_BASE_URL"].replace("{USER_ID}", user_config["USER_ID"])
 BITRIX_URLS = {key: f"{BITRIX_BASE_URL}{endpoint}" for key, endpoint in settings["ENDPOINTS"].items()}
 
@@ -50,7 +50,7 @@ def create_task_in_bitrix(task_data):
         print(f"Error al crear la tarea: {response.status_code} - {response.text}")
 
 
-# 🔹 Función para obtener tareas desde Bitrix con filtro por nombre
+# Función para obtener tareas desde Bitrix con filtro por nombre
 #def get_tasks_from_bitrix():
 #    response = requests.post(BITRIX_URLS["BITRIX_GET_TASKS_URL"], verify=False)
 #
@@ -58,7 +58,7 @@ def create_task_in_bitrix(task_data):
 #        data = response.json()
 #        tasks = data.get("result", {}).get("tasks", [])
 #
-#        # 🔹 Filtrar solo las tareas cuyo nombre comienza con "KTK0"
+#        # Filtrar solo las tareas cuyo nombre comienza con "KTK0"
 #        filtered_tasks = [task for task in tasks if task.get("title", "").startswith("KTK0")]
 #
 #        return filtered_tasks if filtered_tasks else []
@@ -66,7 +66,7 @@ def create_task_in_bitrix(task_data):
 #    print(f"❌ Error al obtener tareas: {response.status_code} - {response.text}")
 #    return []
 
-# 🔹 Función para obtener tareas desde Bitrix
+# Función para obtener tareas desde Bitrix
 def get_tasks_from_bitrix():
     response = requests.post(BITRIX_URLS["BITRIX_GET_TASKS_URL"], verify=False)
 
@@ -75,7 +75,7 @@ def get_tasks_from_bitrix():
         tasks = data.get("result", {}).get("tasks", [])
         return tasks if tasks else []
 
-    print(f"❌ Error al obtener tareas: {response.status_code} - {response.text}")
+    print(f"Error al obtener tareas: {response.status_code} - {response.text}")
     return []
 
 def get_user_name(user_id):

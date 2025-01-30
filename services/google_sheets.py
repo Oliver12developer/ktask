@@ -11,8 +11,8 @@ SERVICE_ACCOUNT_FILE = "fit-guide-433118-p4-193f4862b36c.json"
 # Alcances (scopes) necesarios
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
-READ_RANGE_NAME = "Hoja 2!A2:R"
-WRITE_RANGE_NAME = "Hoja 2!A2"
+READ_RANGE_NAME = "Hoja 7!A2:R"
+WRITE_RANGE_NAME = "Hoja 7!A2"
 
 
 def get_credentials():

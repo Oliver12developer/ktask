@@ -7,7 +7,7 @@ from services.bitrix import get_user_id_by_name, create_task_in_bitrix, get_task
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
-# 🔹 Función para cargar JSON de manera segura
+# Función para cargar JSON de manera segura
 def load_json(filename):
     try:
         with open(filename, 'r', encoding='utf-8') as file:
@@ -16,12 +16,12 @@ def load_json(filename):
         print(f"Error al cargar {filename}")
         exit(1)
 
-# 🔹 Cargar configuraciones desde archivos JSON
+# Cargar configuraciones desde archivos JSON
 sheet_config = load_json("settings/SheetURL.json")
 settings_config = load_json("settings/settings.json")
 user_config = load_json("settings/user_id.json")
 
-# 🔹 Extraer SHEET_ID desde la URL
+# Extraer SHEET_ID desde la URL
 def extract_sheet_id(sheet_url):
     match = re.search(r"/d/([a-zA-Z0-9-_]+)/", sheet_url)
     return match.group(1) if match else None
@@ -31,13 +31,13 @@ if not SHEET_ID:
     print("Error: No se pudo extraer el ID de la hoja de cálculo.")
     exit(1)
 
-# 🔹 Obtener USER_ID
+# Obtener USER_ID
 USER_ID = user_config.get("USER_ID")
 if not USER_ID:
     print("Error: No se encontró 'USER_ID' en user_id.json")
     exit(1)
 
-# 🔹 Construcción de URLs de Bitrix con USER_ID dinámico
+# Construcción de URLs de Bitrix con USER_ID dinámico
 BITRIX_BASE_URL = settings_config["BITRIX_BASE_URL"].replace("{USER_ID}", USER_ID)
 BITRIX_URLS = {key: f"{BITRIX_BASE_URL}{endpoint}" for key, endpoint in settings_config["ENDPOINTS"].items()}
 
@@ -67,7 +67,7 @@ user_cache = {}
 group_cache = {}
 
 
-# 🔹 Función principal del menú
+# Función principal del menú
 def main():
     while True:
         print("\n Menú de Opciones:")
@@ -95,7 +95,7 @@ def main():
                 print(" No se encontraron datos en la hoja.")
 
         elif opcion == "3":
-            print("\n Ejecutando el script scripts/ResumeTask.py...")
+            print("\n...")
 
             result = subprocess.run(["python3", "scripts/ResumeTask.py"], capture_output=True, text=True)
 
@@ -109,15 +109,16 @@ def main():
         else:
             print("Opción no válida, intenta de nuevo.")
 
-# 🔹 Función para procesar las tareas y enviarlas a Bitrix
+# Función para procesar las tareas y enviarlas a Bitrix
 def process_sheet_data(data):
-    for row in data:
+    for i, row in enumerate(data, start=2):
+        # Si la tarea no tiene datos en la columna M, verfifica que tenga los demas datos
         if len(row) < 13:
             print(f"Fila incompleta, se omite: {row}")
             continue
 
         if row[12].strip():
-            print(f"La celda 'M' contiene datos, se omite la fila: {row}")
+            print(f"La celda 'M' contiene datos, se omite la fila {i}")
             continue
 
         task_name = f"{row[2].strip()} {row[3].strip()}"
@@ -173,6 +174,6 @@ def process_sheet_data(data):
         create_task_in_bitrix(task_data)
 
 
-# 🔹 Iniciar el menú primero
+# Iniciar el menú primero
 if __name__ == "__main__":
     main()

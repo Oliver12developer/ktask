@@ -14,7 +14,7 @@ def load_json(filename):
         with open(filename, "r", encoding="utf-8") as file:
             return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
-        print(f"❌ Error al cargar {filename}")
+        print(f"Error al cargar {filename}")
         exit(1)
 
 # Cargar configuraciones desde los archivos JSON
@@ -45,7 +45,7 @@ service = build("sheets", "v4", credentials=credentials)
 
 WRITE_RANGE_NAME = "Hoja 2!R2:R"
 
-# 🔹 Función para obtener tareas desde Bitrix
+#Función para obtener tareas desde Bitrix
 def get_tasks_from_bitrix():
     response = requests.post(BITRIX_URLS["BITRIX_GET_TASKS_URL"], verify=False)
 
@@ -54,10 +54,10 @@ def get_tasks_from_bitrix():
         tasks = data.get("result", {}).get("tasks", [])
         return tasks if tasks else []
 
-    print(f"❌ Error al obtener tareas: {response.status_code} - {response.text}")
+    print(f"Error al obtener tareas: {response.status_code} - {response.text}")
     return []
 
-# 🔹 Función para obtener el Resumen del Estado de la tarea
+#Función para obtener el Resumen del Estado de la tarea
 def get_resume_task(taskId):
     params = {"taskId": taskId}
     headers = {"Content-Type": "application/json"}
@@ -69,14 +69,12 @@ def get_resume_task(taskId):
 
         if "result" in data and isinstance(data["result"], list) and len(data["result"]) > 0:
             return data["result"][0].get("text", "Sin comentarios disponibles").strip()
+    return "No contiene resumen del estado de tarea"
 
-    print(f"❌ Error al obtener resumen de la tarea {taskId}: {response.status_code} - {response.text}")
-    return "Sin resúmen"
-
-# 🔹 Función para actualizar Google Sheets con los resúmenes de estado
+#Función para actualizar Google Sheets con los resúmenes de estado
 def update_sheet_with_summaries(sheet_id, tasks):
     if not tasks:
-        print("⚠️ No hay tareas para actualizar en Google Sheets.")
+        print("No hay tareas para actualizar en Google Sheets.")
         return
 
     try:
@@ -84,7 +82,7 @@ def update_sheet_with_summaries(sheet_id, tasks):
         for task in tasks:
             task_id = task.get("id")
             resumen = get_resume_task(task_id)
-            print(f"📌 Tarea {task_id}: {resumen}")  # Para depuración
+            print(f"Tarea {task_id}: {resumen}")  # Para depuración
             values.append([resumen])
 
         body = {"values": values}
@@ -97,16 +95,16 @@ def update_sheet_with_summaries(sheet_id, tasks):
             body=body
         ).execute()
 
-        print(f"✅ Se han actualizado {response.get('updatedCells', 0)} celdas en Google Sheets.")
+        print(f"Se han actualizado {response.get('updatedCells', 0)} celdas en Google Sheets.")
     except Exception as e:
-        print(f"❌ Error al actualizar Google Sheets: {e}")
+        print(f"Error al actualizar Google Sheets: {e}")
 
-# 🔹 Ejecutar el script
+#Ejecutar el script
 if __name__ == "__main__":
-    print("📥 Obteniendo resúmenes de tareas desde Bitrix...")
+    print("Obteniendo resúmenes de tareas desde Bitrix...")
     tasks = get_tasks_from_bitrix()
 
     if tasks:
         update_sheet_with_summaries(SHEET_ID, tasks)
     else:
-        print("⚠️ No se encontraron tareas en Bitrix.")
+        print("No se encontraron tareas en Bitrix.")
