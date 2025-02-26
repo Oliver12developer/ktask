@@ -43,7 +43,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 credentials = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 service = build("sheets", "v4", credentials=credentials)
 
-WRITE_RANGE_NAME = "Hoja 2!R2:R"
+WRITE_RANGE_NAME = "Hoja 2!Q2:Q"
 
 #Función para obtener tareas desde Bitrix
 def get_tasks_from_bitrix():

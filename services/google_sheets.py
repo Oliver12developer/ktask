@@ -11,7 +11,7 @@ SERVICE_ACCOUNT_FILE = "fit-guide-433118-p4-193f4862b36c.json"
 # Alcances (scopes) necesarios
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
-READ_RANGE_NAME = "Hoja 7!A2:R"
+READ_RANGE_NAME = "Tareas_Fernanda!A2:R"
 WRITE_RANGE_NAME = "Hoja 7!A2"
 
 

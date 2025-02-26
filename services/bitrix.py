@@ -120,8 +120,9 @@ def get_group_name(group_id):
     return "Sin información"
 
 
-
 def get_user_id_by_name(full_name):
+
+
     if full_name in user_cache:
         return user_cache[full_name]
 

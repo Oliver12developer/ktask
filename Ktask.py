@@ -57,8 +57,8 @@ service = build("sheets", "v4", credentials=credentials)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Rango de celdas para lectura y escritura
-READ_RANGE_NAME = "Hoja 2!A2:R"
-WRITE_RANGE_NAME = "Hoja 2!A2"
+READ_RANGE_NAME = "Tareas_Fernanda!A2:R"
+WRITE_RANGE_NAME = "Hoja 7!A2"
 
 headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
@@ -74,7 +74,8 @@ def main():
         print("1. Obtener tareas")
         print("2. Crear tareas")
         print("3. Obtener Resumen del Estado de las Tareas")
-        print("4. Salir de Ktask")
+        print("4. Crear subtareas")
+        print("5. Salir de Ktask")
 
         opcion = input("Ingrese el número de la opción: ")
 
@@ -90,12 +91,12 @@ def main():
             print("\n Creando tareas en Bitrix...")
             data = read_from_sheet(SHEET_ID, READ_RANGE_NAME)
             if data:
-                process_sheet_data(data)
+                process_sheet_data(data, is_subtask=False)  # Tareas normales
             else:
                 print(" No se encontraron datos en la hoja.")
 
         elif opcion == "3":
-            print("\n...")
+            print("\n Ejecutando scripts/ResumeTask.py...")
 
             result = subprocess.run(["python3", "scripts/ResumeTask.py"], capture_output=True, text=True)
 
@@ -103,6 +104,14 @@ def main():
             print(result.stderr)  # Mostrar errores (si hay)
 
         elif opcion == "4":
+            print("\n Creando subtareas en Bitrix...")
+            data = read_from_sheet(SHEET_ID, READ_RANGE_NAME)
+            if data:
+                process_sheet_data(data, is_subtask=True)  # Solo subtareas
+            else:
+                print(" No se encontraron datos en la hoja.")
+
+        elif opcion == "5":
             print("Saliendo del programa...")
             break
 
@@ -110,9 +119,8 @@ def main():
             print("Opción no válida, intenta de nuevo.")
 
 # Función para procesar las tareas y enviarlas a Bitrix
-def process_sheet_data(data):
+def process_sheet_data(data, is_subtask=False):
     for i, row in enumerate(data, start=2):
-        # Si la tarea no tiene datos en la columna M, verfifica que tenga los demas datos
         if len(row) < 13:
             print(f"Fila incompleta, se omite: {row}")
             continue
@@ -159,6 +167,18 @@ def process_sheet_data(data):
         group_name = row[11].strip() if len(row) > 11 else ""
         group_id = get_group_id_by_name(group_name)
 
+        # Obtener `PARENT_ID` desde la columna R
+        parent_id = row[17].strip() if len(row) > 17 and row[17].strip().isdigit() else None
+
+        # Validar si la tarea es subtarea o normal
+        if is_subtask and not parent_id:
+            print(f"⚠️ La fila {i} no tiene un `PARENT_ID`, se omite.")
+            continue
+        elif not is_subtask and parent_id:
+            print(f"⚠️ La fila {i} tiene `PARENT_ID`, se omitirá en la creación de tareas normales.")
+            continue
+
+        # Construir `task_data`
         task_data = {
             "TITLE": task_name,
             "DESCRIPTION": task_description,
@@ -169,6 +189,11 @@ def process_sheet_data(data):
             "TAGS": tags,
             "GROUP_ID": group_id,
         }
+
+        # Agregar `PARENT_ID` si es una subtarea
+        if parent_id:
+            task_data["PARENT_ID"] = parent_id
+            print(f"Creando subtarea con `PARENT_ID`: {parent_id}")
 
         print(f"Tarea preparada: {task_data}")
         create_task_in_bitrix(task_data)
