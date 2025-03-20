@@ -10,9 +10,16 @@ SERVICE_ACCOUNT_FILE = "fit-guide-433118-p4-193f4862b36c.json"
 
 # Alcances (scopes) necesarios
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-
-READ_RANGE_NAME = "Tareas_Fernanda!A2:R"
-WRITE_RANGE_NAME = "Hoja 7!A2"
+def load_json(filename):
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            return json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"❌ Error al cargar {filename}")
+        exit(1)
+sheet_config = load_json("settings/sheet_config.json")
+READ_RANGE_NAME = sheet_config["READ_RANGE_NAME"]
+WRITE_RANGE_NAME = sheet_config["WRITE_RANGE_NAME"]
 
 
 def get_credentials():

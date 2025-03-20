@@ -2,6 +2,7 @@ import json
 import re
 import subprocess
 import urllib3
+from scripts.BitrixLink import write_link_to_sheet
 from services.google_sheets import read_from_sheet, write_tasks_to_sheet
 from services.bitrix import get_user_id_by_name, create_task_in_bitrix, get_tasks_from_bitrix, get_group_id_by_name
 from google.oauth2.service_account import Credentials
@@ -19,7 +20,7 @@ def load_json(filename):
 # Cargar configuraciones desde archivos JSON
 sheet_config = load_json("settings/SheetURL.json")
 settings_config = load_json("settings/settings.json")
-user_config = load_json("settings/user_id.json")
+range_config = load_json("settings/sheet_config.json")
 
 # Extraer SHEET_ID desde la URL
 def extract_sheet_id(sheet_url):
@@ -31,15 +32,7 @@ if not SHEET_ID:
     print("Error: No se pudo extraer el ID de la hoja de cálculo.")
     exit(1)
 
-# Obtener USER_ID
-USER_ID = user_config.get("USER_ID")
-if not USER_ID:
-    print("Error: No se encontró 'USER_ID' en user_id.json")
-    exit(1)
 
-# Construcción de URLs de Bitrix con USER_ID dinámico
-BITRIX_BASE_URL = settings_config["BITRIX_BASE_URL"].replace("{USER_ID}", USER_ID)
-BITRIX_URLS = {key: f"{BITRIX_BASE_URL}{endpoint}" for key, endpoint in settings_config["ENDPOINTS"].items()}
 
 # Ruta al archivo JSON de tu cuenta de servicio
 SERVICE_ACCOUNT_FILE = "fit-guide-433118-p4-193f4862b36c.json"
@@ -56,9 +49,8 @@ service = build("sheets", "v4", credentials=credentials)
 # Desactivar advertencias de SSL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# Rango de celdas para lectura y escritura
-READ_RANGE_NAME = "Tareas_Fernanda!A2:R"
-WRITE_RANGE_NAME = "Hoja 7!A2"
+READ_RANGE_NAME = range_config["READ_RANGE_NAME"]
+WRITE_RANGE_NAME = range_config["WRITE_RANGE_NAME"]
 
 headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
@@ -70,12 +62,14 @@ group_cache = {}
 # Función principal del menú
 def main():
     while True:
-        print("\n Menú de Opciones:")
+        print("\n Opciones:")
         print("1. Obtener tareas")
         print("2. Crear tareas")
         print("3. Obtener Resumen del Estado de las Tareas")
         print("4. Crear subtareas")
-        print("5. Salir de Ktask")
+        print("5. Generar link Bitrix")
+        print("6. Salir")
+
 
         opcion = input("Ingrese el número de la opción: ")
 
@@ -100,7 +94,7 @@ def main():
 
             result = subprocess.run(["python3", "scripts/ResumeTask.py"], capture_output=True, text=True)
 
-            print(result.stdout)  # Mostrar salida del script
+            print(result.stdout)  # Msostrar salida del script
             print(result.stderr)  # Mostrar errores (si hay)
 
         elif opcion == "4":
@@ -112,7 +106,11 @@ def main():
                 print(" No se encontraron datos en la hoja.")
 
         elif opcion == "5":
-            print("Saliendo del programa...")
+            print("\n🔗 Actualizando enlaces de tareas en Bitrix...")
+            write_link_to_sheet(SHEET_ID)
+
+        elif opcion == "6":
+            print("Saliendo...")
             break
 
         else:
@@ -132,11 +130,12 @@ def process_sheet_data(data, is_subtask=False):
         task_name = f"{row[2].strip()} {row[3].strip()}"
         task_description = row[4].strip() if len(row) > 4 else ""
 
-        responsible_name = row[6].strip() if len(row) > 6 else ""
-        creator_name = row[7].strip() if len(row) > 7 else ""
+        creator_name = row[6].strip() if len(row) > 6 else ""
+        responsible_name = row[7].strip() if len(row) > 7 else ""
 
-        responsible_id = get_user_id_by_name(responsible_name)
         creator_id = get_user_id_by_name(creator_name)
+        responsible_id = get_user_id_by_name(responsible_name)
+
 
         if not responsible_id or not creator_id:
             print(f"Error con los IDs de Responsable o Creador: {responsible_name}, {creator_name}")
@@ -182,8 +181,8 @@ def process_sheet_data(data, is_subtask=False):
         task_data = {
             "TITLE": task_name,
             "DESCRIPTION": task_description,
-            "RESPONSIBLE_ID": responsible_id,
             "CREATED_BY": creator_id,
+            "RESPONSIBLE_ID": responsible_id,
             "ACCOMPLICES": participants,
             "AUDITORS": observers,
             "TAGS": tags,

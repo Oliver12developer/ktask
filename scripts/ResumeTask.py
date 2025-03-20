@@ -5,6 +5,7 @@ import urllib3
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
+
 # Desactivar advertencias SSL (opcional, solo si Bitrix usa HTTPS sin certificado válido)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -21,6 +22,7 @@ def load_json(filename):
 settings = load_json("settings/settings.json")
 user_config = load_json("settings/user_id.json")
 sheet_config = load_json("settings/SheetURL.json")
+resume_config = load_json("settings/sheet_config.json")
 
 # Extraer ID de la hoja desde la URL en `SheetURL.json`
 def extract_sheet_id(sheet_url):
@@ -43,7 +45,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 credentials = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 service = build("sheets", "v4", credentials=credentials)
 
-WRITE_RANGE_NAME = "Hoja 2!Q2:Q"
+RESUME_TASK_RANGE_NAME = resume_config["RESUME_TASK_RANGE_NAME"]
 
 #Función para obtener tareas desde Bitrix
 def get_tasks_from_bitrix():
@@ -90,7 +92,7 @@ def update_sheet_with_summaries(sheet_id, tasks):
         # Actualiza Google Sheets
         response = service.spreadsheets().values().update(
             spreadsheetId=sheet_id,
-            range=WRITE_RANGE_NAME,
+            range=RESUME_TASK_RANGE_NAME,
             valueInputOption="USER_ENTERED",
             body=body
         ).execute()

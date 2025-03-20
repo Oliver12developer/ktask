@@ -1,5 +1,5 @@
 {
-    "BITRIX_BASE_URL": "https://bitrix.kernotek.mx/rest/294/3kvtr1kiz9f8u18d/",
+    "BITRIX_BASE_URL": "https://bitrix.kernotek.mx/rest/410/aus11efmzvgl03eu/",
     "ENDPOINTS": {
         "BITRIX_CREATE_TASK_URL": "/task.item.add",
         "BITRIX_GET_TASKS_URL": "/tasks.task.list",
